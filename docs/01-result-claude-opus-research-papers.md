@@ -8,13 +8,13 @@ Summary: This foundational paper introduces RAG as a general-purpose fine-tuning
 
 Relevance: Essential for understanding the fundamental architecture of RAG systems. While the paper uses pre-trained models, the core concepts of combining retrieval and generation components are directly applicable to your low-level implementation needs.
 
-2. ["RAG-Fusion: A New Take on Retrieval-Augmented Generation"](https://arxiv.org/pdf/2402.03367)
+2. ["RAG-Fusion: A New Take on Retrieval-Augmented Generation"](https://arxiv.org/html/2402.03367)
 
 Summary: This paper presents RAG-Fusion, which combines RAG with Reciprocal Rank Fusion (RRF) by generating multiple queries, reranking them with reciprocal scores, and fusing documents and scores. The system provides accurate and comprehensive answers by contextualizing queries from various perspectives.
 
 Relevance: Directly relevant for implementing the fusion mechanism between SQL and vector search results. The RRF algorithm described can be implemented using basic SDKs without frameworks.
 
-3. ["DeKeyNLU: Enhancing Natural Language to SQL Generation through Task Decomposition and Keyword Extraction"](https://arxiv.org/pdf/2509.14507)
+3. ["DeKeyNLU: Enhancing Natural Language to SQL Generation through Task Decomposition and Keyword Extraction"](https://arxiv.org/html/2509.14507)
 
 Summary: This paper presents a dataset and methodology for refining task decomposition and enhancing keyword extraction precision for NL2SQL pipelines. The DeKeySQL system employs three distinct modules for user question understanding, entity retrieval, and generation, improving SQL generation accuracy on BIRD (62.31% to 69.10%) and Spider (84.2% to 88.7%) datasets.
 
@@ -22,7 +22,7 @@ Relevance: Highly relevant for the query decomposition component of your system,
 
 ## Papers on Query Decomposition and Understanding
 
-4. ["Training Table Question Answering via SQL Query Decomposition"](https://arxiv.org/pdf/2402.13288)
+4. ["Training Table Question Answering via SQL Query Decomposition"](https://arxiv.org/html/2402.13288)
 
 Summary: This paper shows how learning to imitate SQL-like algebraic operations provides intermediate supervision steps that allow increased generalization and structural reasoning. The execution flow of SQL operations provides a framework for systematic query decomposition.
 
@@ -42,7 +42,7 @@ Summary: The original RRF paper demonstrates how the algorithm evaluates search 
 
 Relevance: Critical for implementing the fusion mechanism between SQL and vector search results. The algorithm is simple enough to implement directly without frameworks.
 
-7. ["HybridRAG: Integrating Knowledge Graphs and Vector Retrieval Augmented Generation for Efficient Information Extraction"](https://arxiv.org/pdf/2408.04948v1)
+7. ["HybridRAG: Integrating Knowledge Graphs and Vector Retrieval Augmented Generation for Efficient Information Extraction"](https://arxiv.org/html/2408.04948v1)
 
 Summary: This paper presents a combination of GraphRAG and VectorRAG techniques for enhanced Q&A systems, demonstrating how to integrate retrieval mechanisms from both structured and unstructured data sources without relying on complex frameworks.
 
@@ -56,7 +56,7 @@ Summary: This practical guide demonstrates building RAG systems without librarie
 
 Relevance: Directly addresses your requirement of building without frameworks, providing practical code examples and architectural guidance for low-level implementation.
 
-9. ["RAG-based Question Answering over Heterogeneous Data and Text"](https://arxiv.org/pdf/2412.07420)
+9. ["RAG-based Question Answering over Heterogeneous Data and Text"](https://arxiv.org/html/2412.07420)
 
 Summary: This paper addresses QA systems operating over heterogeneous sources including text, knowledge graphs, and tables. It demonstrates how to combine multiple pieces of evidence of different modalities without complex frameworks.
 
@@ -64,7 +64,7 @@ Relevance: Highly relevant for handling both structured (SQL) and unstructured (
 
 ## Papers on Answer Synthesis and Multi-Source Integration
 
-10. ["ER-RAG: Enhance RAG with ER-Based Unified Modeling of Heterogeneous Data Sources"](https://arxiv.org/pdf/2504.06271)
+10. ["ER-RAG: Enhance RAG with ER-Based Unified Modeling of Heterogeneous Data Sources"](https://arxiv.org/html/2504.06271)
 
 Summary: This framework enables RAG systems to integrate information from multiple heterogeneous data sources through a two-stage process: source selection and API chain construction. The system leverages schema information for precise and context-aware generation.
 
