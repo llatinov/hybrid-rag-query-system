@@ -16,7 +16,7 @@ Paper Title: DeKeyNLU: Enhancing Natural Language to SQL Generation through Task
 
 3. Query Handling & Retrieval Logic:
    - **Query Parsing**: User question processed via fine-tuned LLM (e.g., GPT-4o-mini, Mistral-7B) to extract structured tasks and keywords.
-   - **Hybrid Retrieval**: 
+   - **Hybrid Retrieval**:
      - **Database Retrieval**: MinHash/BM25 retrieves top-5 column names and table values (score > 0); re-ranker selects top-2.
      - **Description Retrieval**: Embedding model + cosine similarity for top-5 descriptions; re-ranker finalizes relevance.
    - **Ranking/Fusion**: Two-stage retrieval + re-ranking ensures precision; de-duplication and categorization of retrieved entities before generation.
@@ -26,7 +26,7 @@ Paper Title: DeKeyNLU: Enhancing Natural Language to SQL Generation through Task
    - **Libraries/SDKs**: `openai` (GPT-4, GPT-4o, GPT-4o-mini), `psycopg2` (assumed for DB access), Chroma (vector DB), MinHash (set similarity), BM25 (text ranking).
    - **Models**: Fine-tuning with LoRA (rank=64, alpha=16, dropout=0.05, 4-bit precision) on 4x Nvidia 4090 GPUs; batch size=1, 1 epoch, lr=2e-4.
    - **Fine-tuning Time**: ~30 min (UQU), 4-5 hours (code generation).
-   - **Code-Level Hints**: 
+   - **Code-Level Hints**:
      - Use MinHash + Jaccard for fast approximate set similarity on large databases.
      - Apply BM25 for keyword-based retrieval; exact match for purely numeric filters.
      - Fine-tune smaller models (Mistral-7B) for keyword extraction; larger models (GPT-4o-mini) for task decomposition.
@@ -36,7 +36,7 @@ Paper Title: DeKeyNLU: Enhancing Natural Language to SQL Generation through Task
 5. Evaluation & Performance:
    - **Metrics**: Execution Accuracy (EX) for SQL correctness; BLEU, ROUGE, GPT-4o score (calibrated with human eval) for task decomposition; F1 for keyword extraction.
    - **Benchmarks**: BIRD dev set (69.10% EX, up from 62.31% without fine-tuning); Spider dev (88.7%, from 84.2%).
-   - **Performance Insights**: 
+   - **Performance Insights**:
      - UQU module contributes +9.18% accuracy gain (largest impact).
      - Entity retrieval adds +4.9%.
      - Revision improves accuracy but with cost tradeoff.

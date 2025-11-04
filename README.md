@@ -57,3 +57,45 @@ Results:
 - docs/03-result-claude-code-process-articles-openai.py
 - docs/03-result-claude-code-prompt.md
 - docs/articles/\*.md
+
+### 3. Extract valuable info from articles
+
+In general reviewing so many papers, even with LLM summary is tedious process. Papers are very abstract and lack implementation details.
+
+The result is several techniques or terms that needs to be researched further for practical usage. Those are split into the general blocks of the application to be developed.
+
+#### RAG Fusion on the textual data
+
+- Acquire data (Wikidump? Or?)
+- VectorDB: Vectorize it and save it into vector DB (FAISS/ChromaDB) or MIPS index using FAISS?
+- Plain: We do similarity search with jaccard similarity? Use numpy for vector math over the text?
+- Use LLM in one go to generate several search queries (3-5) from the user query (Is it better to generate search queries or search keywords?) - "generate 5 search queries with their corresponding probabilities, sampled from the full distribution"
+- RRF: rrfscore = 1 / (rank + k) - use article 06 for more details
+- Take first 5 or 10 results (how de we chunk the data?) and give it to the LLM to summarize
+- Keep citations
+
+#### Language to SQL and search the database
+
+- Acquire SQL database with data
+- NL2SQL - oh, boy, how do we do that, all papers (03, 04, 05 and 11) are abstract and do not give much details
+- NL2SQL research more, find a library?
+- BIRD dataset?
+- MinHash/BM25 retrieves top-5 column names and table values
+- MinHash + Jaccard Score for column names
+- Embedding model + cosine similarity for top-5 descriptions
+- Chain-of-Thought (CoT) prompts for task decomposition
+- Search (vector + text) on database schema elements (table/column names, values, descriptions) to find a match
+- RAG Fusion for better precision
+- RAT-SQL
+- GNN-based encoder
+- ANN
+- Break into main task and subtasks, iterate on those
+- Add feedback loop to improve results
+- Larger models excel at complex reasoning (task decomposition); smaller models sufficient for pattern matching (keyword extraction).
+- Keep SQL results and visualize for feedback
+
+#### Answer synthesis
+
+- Take the text and SQL results and merge them into one answer?
+- Provide two answers?
+- Keep citations

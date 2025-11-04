@@ -109,7 +109,7 @@ def save_result(content: str, key: str, output_dir: str) -> str:
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     # Format filename with key
-    filename = f"{key}-chatgpt-prompt-vs-claude-api.md"
+    filename = f"{key}-prompt-vs-claude-api.md"
     filepath = os.path.join(output_dir, filename)
 
     # Save content to file
