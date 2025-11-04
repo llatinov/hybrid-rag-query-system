@@ -78,7 +78,7 @@ The result is several techniques or terms that needs to be researched further fo
 
 - Acquire SQL database with data
 - NL2SQL - oh, boy, how do we do that, all papers (03, 04, 05 and 11) are abstract and do not give much details
-- NL2SQL research more, find a library?
+- NL2SQL + TEXT2SQL - research more, find a library?
 - BIRD dataset?
 - MinHash/BM25 retrieves top-5 column names and table values
 - MinHash + Jaccard Score for column names
