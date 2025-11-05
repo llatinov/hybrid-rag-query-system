@@ -1,11 +1,8 @@
 import json
-import os
 import sqlite3
-import sys
 import time
 import zipfile
 from openai import OpenAI
-from os import path
 from pathlib import Path
 
 from gpt_model import GPTModel
@@ -152,12 +149,7 @@ Schema:
             # End timing
             end_time = time.time()
             elapsed_time = end_time - start_time
-
-            # Calculate cost
-
-            print(f"Successfully generated metadata to {self.db_metadata_path}")
-            print(f"API call took {elapsed_time:.2f} seconds")
-            self.gpt_model.print_cost(response.usage)
+            self.gpt_model.prepare_statistics(elapsed_time, response.usage).print()
 
         except Exception as e:
             print(f"Error generating metadata: {str(e)}")

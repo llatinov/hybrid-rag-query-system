@@ -1,6 +1,37 @@
 from openai.types import CompletionUsage
 
 
+class ApiStatistics:
+    """Statistics object for API call metrics."""
+
+    def __init__(self, input_tokens: int, input_cost: float, output_tokens: int,
+                 output_cost: float, total_cost: float, total_time: float):
+        """
+        Initialize Statistics object.
+
+        Args:
+            input_tokens: Number of input tokens
+            input_cost: Cost of input tokens
+            output_tokens: Number of output tokens
+            output_cost: Cost of output tokens
+            total_cost: Total cost of the API call
+            total_time: Time taken for the API call in seconds
+        """
+        self.input_tokens = input_tokens
+        self.input_cost = input_cost
+        self.output_tokens = output_tokens
+        self.output_cost = output_cost
+        self.total_cost = total_cost
+        self.total_time = total_time
+
+    def print(self):
+        """Print statistics in a formatted way."""
+        print(f"⏱️  API call took {self.total_time:.2f} seconds")
+        print(f"💰 Cost: ${self.total_cost:.6f} "
+              f"(Input: {self.input_tokens} tokens for ${self.input_cost:.6f}, "
+              f"Output: {self.output_tokens} tokens ${self.output_cost:.6f})")
+
+
 class GPTModel:
     """Encapsulates GPT model pricing and cost calculation."""
 
@@ -24,12 +55,16 @@ class GPTModel:
         self.model_name = model_name
         self.pricing = self.MODEL_PRICING.get(model_name)
 
-    def print_cost(self, usage: CompletionUsage):
+    def prepare_statistics(self, total_time: float, usage: CompletionUsage) -> ApiStatistics:
         """
-        Calculate and print cost from OpenAI API usage response.
+        Calculate cost from OpenAI API usage response.
 
         Args:
+            total_time: API time in seconds
             usage: Usage object from OpenAI API response (response.usage)
+
+        Returns:
+            ApiStatistics object with tokens, costs, and timing information
         """
         input_tokens = usage.prompt_tokens
         output_tokens = usage.completion_tokens
@@ -39,6 +74,11 @@ class GPTModel:
         output_cost = (output_tokens / 1_000_000) * self.pricing[1]
         total_cost = input_cost + output_cost
 
-        print(f"💰 Cost: ${total_cost:.6f} "
-              f"(Input: {input_tokens} tokens for ${input_cost:.6f}, "
-              f"Output: {output_tokens} tokens ${output_cost:.6f})")
+        return ApiStatistics(
+            input_tokens=input_tokens,
+            input_cost=input_cost,
+            output_tokens=output_tokens,
+            output_cost=output_cost,
+            total_cost=total_cost,
+            total_time=total_time
+        )

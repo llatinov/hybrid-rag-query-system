@@ -84,7 +84,7 @@ class SQLQueryAssistant:
                 "error": f"Unexpected error: {str(e)}"
             }
 
-    def analyze_question(self, question: str) -> dict:
+    def analyze_question(self, question: str) -> tuple:
         """
         Send question to OpenAI to analyze and break down into SQL subtasks.
 
@@ -155,63 +155,63 @@ Please provide your response in the following JSON format:
             end_time = time.time()
             elapsed_time = end_time - start_time
 
-            # Display timing and cost info
-            print(f"\n⏱️  API call took {elapsed_time:.2f} seconds")
-            self.gpt_model.print_cost(response.usage)
-
             result = json.loads(response.choices[0].message.content)
-            return result
+            statistics = self.gpt_model.prepare_statistics(elapsed_time, response.usage)
+            return result, statistics
 
         except Exception as e:
             print(f"Error calling OpenAI API: {e}")
-            return None
+            return None, None
 
-    def display_analysis(self, analysis: dict, execute_queries: bool = True):
+    def process_analysis(self, analysis: dict) -> tuple:
         """
         Display the analysis results in a formatted way.
 
         Args:
             analysis: Analysis dictionary from analyze_question
-            execute_queries: Whether to execute the SQL queries and display results
         """
+        console_output = []
+        gpt_input = []
 
-        print("\n" + "="*80)
-        print("QUERY ANALYSIS")
-        print("="*80)
+        console_output.append("\n📝 Explanation:")
+        console_output.append(f"   {analysis['explanation']}")
+        console_output.append("\n📊 Relevant Tables:")
 
-        print("\n📝 Explanation:")
-        print(f"   {analysis['explanation']}")
-
-        print("\n📊 Relevant Tables:")
         for table in analysis['relevant_tables']:
-            print(f"   - {table}")
+            console_output.append(f"   - {table}")
 
-        print("\n🔍 Query Breakdown:")
+        console_output.append("\n🔍 Query Breakdown:")
+        gpt_input = console_output.copy()
+
         for i, subtask in enumerate(analysis['subtasks'], 1):
-            print(f"\n   Subtask {i}: {subtask['description']}")
-            print(f"   Rationale: {subtask['rationale']}")
-            print(f"   SQL Query: {subtask['sql_query']}")
+            subtask_output = []
+            subtask_output.append(f"\n   Subtask {i}: {subtask['description']}")
+            subtask_output.append(f"   Rationale: {subtask['rationale']}")
+            subtask_output.append(f"   SQL Query: {subtask['sql_query']}")
 
-            if execute_queries:
-                result = self.execute_query(subtask['sql_query'])
-                if result['success']:
-                    if result['row_count'] > 0:
-                        # Display column headers
-                        print(f"\n   Results:")
-                        print(f"   " + " | ".join(result['columns']))
-                        print(f"   " + "-" * 60)
+            result = self.execute_query(subtask['sql_query'])
+            if result['success']:
+                if result['row_count'] > 0:
+                    # Display column headers
+                    subtask_output.append("\n   Results:")
+                    subtask_output.append("   " + " | ".join(result['columns']))
+                    subtask_output.append("   " + "-" * 60)
 
-                        # Display rows (limit to first 10 for readability)
-                        max_rows = 10
-                        for _, row in enumerate(result['rows'][:max_rows]):
-                            row_str = " | ".join(str(val) if val is not None else "NULL" for val in row)
-                            print(f"   {row_str}")
+                    # Display rows (limit to first 10 for readability)
+                    max_rows = 10
+                    for _, row in enumerate(result['rows'][:max_rows]):
+                        row_str = " | ".join(str(val) if val is not None else "NULL" for val in row)
+                        subtask_output.append(f"   {row_str}")
 
-                        if result['row_count'] > max_rows:
-                            print(f"   ... ({result['row_count'] - max_rows} more rows)")
-                    else:
-                        print(f"   No rows returned.")
+                    if result['row_count'] > max_rows:
+                        subtask_output.append(f"   ... ({result['row_count'] - max_rows} more rows)")
+
+                    # Add to GPT prompt only if successful
+                    gpt_input.extend(subtask_output)
                 else:
-                    print(f"   ❌ Query failed: {result['error']}")
+                    subtask_output.append("   No rows returned.")
+            else:
+                subtask_output.append(f"   ❌ Query failed: {result['error']}")
+            console_output.extend(subtask_output)
 
-        print("\n" + "="*80)
+        return console_output, gpt_input

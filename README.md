@@ -12,7 +12,8 @@ A system that answers user questions by querying both a structured database (SQL
 ## Usage
 
 1. Set OpenAI API key: `export OPENAI_API_KEY='your_api_key_here'`
-2. Run the query assistant: `python data/query_assistant.py`
+2. Disable SQL debug if output is too much: `export SQL_DEBUG=false`
+3. Run the query assistant: `python data/query_assistant.py`
 
 ## Data
 
