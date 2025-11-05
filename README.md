@@ -12,7 +12,7 @@ A system that answers user questions by querying both a structured database (SQL
 ## Usage
 
 1. Set OpenAI API key: `export OPENAI_API_KEY='your_api_key_here'`
-2. Extract the data: `python data/prepare_data.py`
+2. Run the query assistant: `python data/query_assistant.py`
 
 ## Data
 
@@ -28,7 +28,7 @@ Explain the challenges you encountered while building this system from scratch, 
 - Northwind database is processed on application initialization
 - SQL schema is created and OpenAI API is called to describe the SQL schema
 - The resulting metadata and save this to a JSON file conforming to predefined with JSON schema
-- Tables metadata is extracted out of the full metadata in order to reduce the context window
+- TODO - Tables metadata is extracted out of the full metadata in order to reduce the context window
 - TODO - split the tables data into smaller files and make tables metadata to refer to those files, this is for further optimization of the context
 
 ## Implementation steps
@@ -125,3 +125,7 @@ The result is several techniques or terms that needs to be researched further fo
 ### 4. Prepare SQL data and metadata
 
 Find a test database and process it in order to generate its metadata, which will be used later for reasoning with the LLM.
+
+### 5. Ask question on the SQL data
+
+Pass the database metadata to OpenAI API in order to understand and map user query to a table and create SQL query.
