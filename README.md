@@ -129,4 +129,4 @@ Find a test database and process it in order to generate its metadata, which wil
 
 ### 5. Ask question on the SQL data
 
-Pass the database metadata to OpenAI API in order to understand and map user query to a table and create SQL query.
+Pass the database metadata to OpenAI API in order to understand and map user query to a table and create SQL query. Execute the queries and get results.Pass results to LLM along with user question in order to answer user's query based on SQL results.
