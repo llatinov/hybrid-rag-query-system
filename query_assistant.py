@@ -3,7 +3,7 @@ import time
 from openai import OpenAI
 from pathlib import Path
 
-from gpt_model import GPTModel
+from gpt_model import ApiStatistics, GPTModel
 from sql_query_assistant import SQLQueryAssistant
 from data_preparator import DataPreparator
 
@@ -14,7 +14,7 @@ GPT_MODEL_PREPARE_DATA = GPTModel("gpt-5")
 GPT_MODEL_ANSWER_GENERATOR = GPTModel("gpt-5-mini")
 
 
-def generate_answer(client: OpenAI, gpt_model: GPTModel, question: str, sql_results: list) -> tuple:
+def generate_answer(client: OpenAI, gpt_model: GPTModel, question: str, sql_results: list) -> tuple[dict, ApiStatistics]:
     """
     Generate a natural language answer based on SQL query results.
 
@@ -97,7 +97,7 @@ def main():
 
     # Initialize SQL Query Assistant
     try:
-        assistant = SQLQueryAssistant(client, DB_METADATA_FILE, GPT_MODEL_SQL_ASSISTANT, DB_FILE_PATH)
+        sql_assistant = SQLQueryAssistant(client, DB_METADATA_FILE, GPT_MODEL_SQL_ASSISTANT, DB_FILE_PATH)
     except Exception as e:
         print(f"Error initializing SQL assistant: {e}")
         return
@@ -124,10 +124,10 @@ def main():
 
             # Analyze the question
             print("\n⏳ Analyzing your question...")
-            analysis, analysis_stats = assistant.analyze_question(question)
+            sql_analysis, sql_analysis_stats = sql_assistant.analyze_question(question)
 
-            if analysis:
-                sql_debug_info, sql_gpt_input = assistant.process_analysis(analysis)
+            if sql_analysis:
+                sql_debug_info, sql_gpt_input = sql_assistant.process_analysis(sql_analysis)
 
                 # Generate natural language answer
                 print("\n⏳ Generating answer...")
@@ -145,16 +145,16 @@ def main():
                 print(f"\n{answer}\n")
                 print("="*80)
                 if answer_stats:
-                    answer_stats.print()
+                    answer_stats.sum(sql_analysis_stats).print()
 
                 if sql_debug:
                     print("\n" + "="*80)
-                    print("DETAILED QUERY ANALYSIS")
+                    print("DETAILED SQL ANALYSIS")
                     print("="*80)
                     print("\n".join(sql_debug_info))
                     print("="*80)
-                    if analysis_stats:
-                        analysis_stats.print()
+                    if sql_analysis_stats:
+                        sql_analysis_stats.print()
 
             else:
                 print("\n❌ Failed to analyze the question. Please try again.")

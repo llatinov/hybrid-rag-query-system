@@ -3,7 +3,7 @@ import sqlite3
 import time
 from openai import OpenAI
 from pathlib import Path
-from gpt_model import GPTModel
+from gpt_model import ApiStatistics, GPTModel
 
 
 class SQLQueryAssistant:
@@ -84,7 +84,7 @@ class SQLQueryAssistant:
                 "error": f"Unexpected error: {str(e)}"
             }
 
-    def analyze_question(self, question: str) -> tuple:
+    def analyze_question(self, question: str) -> tuple[dict, ApiStatistics]:
         """
         Send question to OpenAI to analyze and break down into SQL subtasks.
 
@@ -163,7 +163,7 @@ Please provide your response in the following JSON format:
             print(f"Error calling OpenAI API: {e}")
             return None, None
 
-    def process_analysis(self, analysis: dict) -> tuple:
+    def process_analysis(self, analysis: dict) -> tuple[list, list]:
         """
         Display the analysis results in a formatted way.
 

@@ -31,6 +31,28 @@ class ApiStatistics:
               f"(Input: {self.input_tokens} tokens for ${self.input_cost:.6f}, "
               f"Output: {self.output_tokens} tokens ${self.output_cost:.6f})")
 
+    def sum(self, other: 'ApiStatistics') -> 'ApiStatistics':
+        """
+        Sum this statistics with another ApiStatistics instance.
+
+        Args:
+            other: Another ApiStatistics instance to sum with, or None
+
+        Returns:
+            New ApiStatistics instance with summed values, or self if other is None
+        """
+        if other is None:
+            return self
+
+        return ApiStatistics(
+            input_tokens=self.input_tokens + other.input_tokens,
+            input_cost=self.input_cost + other.input_cost,
+            output_tokens=self.output_tokens + other.output_tokens,
+            output_cost=self.output_cost + other.output_cost,
+            total_cost=self.total_cost + other.total_cost,
+            total_time=self.total_time + other.total_time
+        )
+
 
 class GPTModel:
     """Encapsulates GPT model pricing and cost calculation."""
