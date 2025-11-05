@@ -10,7 +10,6 @@ This script:
 """
 
 import os
-import subprocess
 from openai import OpenAI
 from pathlib import Path
 import requests

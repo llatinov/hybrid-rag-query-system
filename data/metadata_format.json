@@ -1,0 +1,180 @@
+{
+  "name": "database_metadata",
+  "strict": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "database_name": {
+        "type": "string",
+        "description": "The name of the database"
+      },
+      "description": {
+        "type": "string",
+        "description": "General overview of the database purpose and content"
+      },
+      "tables": {
+        "type": "array",
+        "description": "List of all tables in the database",
+        "items": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Whether this is a table or a view",
+              "enum": ["table", "view"]
+            },
+            "name": {
+              "type": "string",
+              "description": "Table name"
+            },
+            "description": {
+              "type": "string",
+              "description": "What this table represents"
+            },
+            "columns": {
+              "type": "array",
+              "description": "List of columns in this table",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Column name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Meaning and purpose of this column"
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "SQL data type"
+                  },
+                  "is_primary_key": {
+                    "type": "boolean",
+                    "description": "Whether this column is a primary key"
+                  },
+                  "is_foreign_key": {
+                    "type": "boolean",
+                    "description": "Whether this column is a foreign key"
+                  },
+                  "references": {
+                    "type": "string",
+                    "description": "If foreign key, which table.column it references (empty string if not applicable)"
+                  },
+                  "nullable": {
+                    "type": "boolean",
+                    "description": "Whether this column can contain NULL values"
+                  },
+                  "unique": {
+                    "type": "boolean",
+                    "description": "Whether this column has a unique constraint"
+                  }
+                },
+                "required": [
+                  "name",
+                  "description",
+                  "type",
+                  "is_primary_key",
+                  "is_foreign_key",
+                  "references",
+                  "nullable",
+                  "unique"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "indexes": {
+              "type": "array",
+              "description": "List of indexes on this table",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Index name"
+                  },
+                  "columns": {
+                    "type": "array",
+                    "description": "Columns included in this index",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "is_unique": {
+                    "type": "boolean",
+                    "description": "Whether this is a unique index"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Purpose of this index"
+                  }
+                },
+                "required": ["name", "columns", "is_unique", "description"],
+                "additionalProperties": false
+              }
+            },
+            "relationships": {
+              "type": "array",
+              "description": "List of relationships of this table with other tables",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "from_table": {
+                    "type": "string",
+                    "description": "Source table name"
+                  },
+                  "from_column": {
+                    "type": "string",
+                    "description": "Source column name"
+                  },
+                  "to_table": {
+                    "type": "string",
+                    "description": "Target table name"
+                  },
+                  "to_column": {
+                    "type": "string",
+                    "description": "Target column name"
+                  },
+                  "relationship_type": {
+                    "type": "string",
+                    "description": "Type of relationship",
+                    "enum": [
+                      "one-to-one",
+                      "one-to-many",
+                      "many-to-one",
+                      "many-to-many"
+                    ]
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Business explanation of the relationship"
+                  }
+                },
+                "required": [
+                  "from_table",
+                  "from_column",
+                  "to_table",
+                  "to_column",
+                  "relationship_type",
+                  "description"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "type",
+            "name",
+            "description",
+            "columns",
+            "indexes",
+            "relationships"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": ["database_name", "description", "tables"],
+    "additionalProperties": false
+  }
+}

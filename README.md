@@ -9,6 +9,28 @@ A system that answers user questions by querying both a structured database (SQL
 1. **Input:** The system accepts a natural language question from the user.
 2. **Outputs:** The system synthesizes the information and generates a coherent, natural language answer to the user's original question.
 
+## Usage
+
+1. Set OpenAI API key: `export OPENAI_API_KEY='your_api_key_here'`
+2. Extract the data: `python data/prepare_data.py`
+
+## Data
+
+- [Northwind-SQLite3](https://github.com/jpwhite3/northwind-SQLite3) - an excellent tutorial schema for a small-business ERP, with customers, orders, inventory, purchasing, suppliers, shipping, employees, and single-entry accounting.
+
+## Implementation details
+
+Explain your design choices, the logic for query understanding and decomposition, data retrieval, result combination, and answer synthesis.
+Explain the challenges you encountered while building this system from scratch, particularly in the absence of high-level frameworks.
+
+### Data preparation
+
+- Northwind database is processed on application initialization
+- SQL schema is created and OpenAI API is called to describe the SQL schema
+- The resulting metadata and save this to a JSON file conforming to predefined with JSON schema
+- Tables metadata is extracted out of the full metadata in order to reduce the context window
+- TODO - split the tables data into smaller files and make tables metadata to refer to those files, this is for further optimization of the context
+
 ## Implementation steps
 
 ### 1. Find research articles
@@ -99,3 +121,7 @@ The result is several techniques or terms that needs to be researched further fo
 - Take the text and SQL results and merge them into one answer?
 - Provide two answers?
 - Keep citations
+
+### 4. Prepare SQL data and metadata
+
+Find a test database and process it in order to generate its metadata, which will be used later for reasoning with the LLM.

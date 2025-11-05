@@ -1,0 +1,3 @@
+# Ignore all files in ready folder except .gitkeep
+data/ready/*
+!data/ready/.gitkeep
