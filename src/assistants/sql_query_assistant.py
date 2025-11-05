@@ -3,37 +3,34 @@ import sqlite3
 import time
 from openai import OpenAI
 from pathlib import Path
-from gpt_model import ApiStatistics, GPTModel
+
+from src.models.gpt_model import ApiStatistics
+from src.config.config import Config
 
 
 class SQLQueryAssistant:
     """Assistant for analyzing user questions and generating SQL queries."""
 
-    def __init__(self, client: OpenAI, metadata_path: Path, gpt_model: GPTModel, db_path: Path):
+    def __init__(self, client: OpenAI, config: Config):
         """
-            Initialize the SQL Query Assistant.
+        Initialize the SQL Query Assistant.
 
-            Args:
-                client: OpenAI client instance
-                metadata_path: Path to the database metadata JSON file
-                gpt_model: GPTModel instance with model configuration
-                db_path: Path to the SQLite database file
-            """
+        Args:
+            client: OpenAI client instance
+            config: Application configuration including models and paths
+        """
         self.client = client
-        self.metadata = self._load_metadata(metadata_path)
-        self.gpt_model = gpt_model
-        self.db_path = db_path
+        self.metadata_str = self._load_metadata(config.file_sql_metadata)
+        self.gpt_model = config.model_sql_assistant
+        self.db_path = config.file_db
 
-    def _load_metadata(self, metadata_path: Path) -> dict:
-        """Load the database metadata from JSON file."""
+    def _load_metadata(self, metadata_path: Path) -> str:
+        """Load the database metadata from JSON file as string."""
         try:
             with open(metadata_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                return f.read()
         except FileNotFoundError:
             print(f"Error: Metadata file not found at {metadata_path}")
-            raise
-        except json.JSONDecodeError as e:
-            print(f"Error parsing JSON metadata: {e}")
             raise
 
     def execute_query(self, sql_query: str) -> dict:
@@ -97,9 +94,6 @@ class SQLQueryAssistant:
         - subtasks: List of subtasks with SQL queries
         """
 
-        # Format metadata for the prompt
-        metadata_str = json.dumps(self.metadata, indent=2)
-
         prompt = f"""You are a database query assistant. Given a user's question and database metadata, your task is to:
 
 1. Explain what the user is asking for in clear terms
@@ -109,7 +103,7 @@ class SQLQueryAssistant:
 
 Database Metadata:
 ```json
-{metadata_str}
+{self.metadata_str}
 ```
 
 Support only data retrieval operations, in case of data insert of modification request:

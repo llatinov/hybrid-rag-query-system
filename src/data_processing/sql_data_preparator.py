@@ -1,47 +1,43 @@
 import json
+import os
 import sqlite3
 import time
 import zipfile
 from openai import OpenAI
-from pathlib import Path
 
-from gpt_model import GPTModel
+from src.config.config import Config
 
 
-class DataPreparator:
+class SqlDataPreparator:
     """Class for preparing database and metadata files."""
 
-    def __init__(self, client: OpenAI, gpt_model: GPTModel):
+    def __init__(self, client: OpenAI, config: Config):
         """
         Initialize DataPreparator.
 
         Args:
             client: OpenAI client instance
-            gpt_model: GPTModel instance for API calls
+            config: Application configuration including models and paths
         """
         self.client = client
-        self.gpt_model = gpt_model
+        self.config = config
+        self.gpt_model = config.model_prepare_data
 
         # Setup paths
-        self.data_folder = Path(__file__).parent / "data"
-        self.ready_folder = self.data_folder / "ready"
+        self.db_zip_path = self.config.folder_data / "northwind.zip"
+        self.db_metadata_format_path = self.config.folder_data / "metadata_format.json"
 
-        self.db_zip_path = self.data_folder / "northwind.zip"
-        self.db_metadata_format_path = self.data_folder / "metadata_format.json"
-
-        self.db_file_path = self.ready_folder / "northwind.db"
-        self.db_schema_path = self.ready_folder / "northwind_schema.sql"
-        self.db_metadata_path = self.ready_folder / "northwind_schema.json"
-        self.db_metadata_tables_path = self.ready_folder / "northwind_schema_tables.json"
+        self.db_file_path = self.config.folder_db / "northwind.db"
+        self.db_schema_path = self.config.folder_db / "northwind_schema.sql"
 
     def unzip_database(self):
         """Unzip the database ZIP file in the current directory."""
         print(f"Unzipping {self.db_zip_path}...")
-        print(f"Extracting to: {self.ready_folder}")
+        print(f"Extracting to: {self.db_schema_path}")
 
         try:
             with zipfile.ZipFile(self.db_zip_path, 'r') as zip_ref:
-                zip_ref.extractall(self.ready_folder)
+                zip_ref.extractall(self.config.folder_db)
             print(f"Successfully extracted database")
         except Exception as e:
             print(f"Error during extraction: {str(e)}")
@@ -143,7 +139,7 @@ Schema:
             metadata = response.choices[0].message.content
 
             # Save metadata to file
-            with open(self.db_metadata_path, 'w', encoding='utf-8') as f:
+            with open(self.config.file_sql_metadata, 'w', encoding='utf-8') as f:
                 f.write(metadata)
 
             # End timing
@@ -172,13 +168,13 @@ Schema:
             print("✓ Database file already exists")
 
         # Step 2: Extract schema
-        if not self.db_schema_path.exists():
+        if not os.path.exists(self.db_schema_path):
             self.extract_schema()
         else:
             print("✓ Schema file already exists")
 
         # Step 3: Generate metadata
-        if not self.db_metadata_path.exists():
+        if not os.path.exists(self.config.file_sql_metadata):
             self.generate_metadata()
         else:
             print("✓ Metadata file already exists")

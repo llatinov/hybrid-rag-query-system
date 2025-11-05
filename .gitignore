@@ -1,6 +1,6 @@
 # ignore all files in ready folder except .gitkeep
-data/ready/*
-!data/ready/.gitkeep
+data/db/*
+!data/db/.gitkeep
 
 # ignore python cache
 *.pyc
