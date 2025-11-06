@@ -101,7 +101,7 @@ Pass the database metadata to OpenAI API in order to understand and map user que
 
 ### 6. Prepare text data and its embeddings
 
-Find a archive with articles and process the text to create articles chunks and embeddings. The hybrid RAG system will not use Vector DB, so vectorization and embeddings are handled in the code.
+Find a archive with articles and process the text to create articles chunks and embeddings. The hybrid RAG system will not use Vector DB, so vectorization and embeddings are handled in the code. Chunk the articles in two manners, by sentence with 512 chars length with 1 sentence overlap or by length with 512 characters length and 50 chars overlap, to see how good by sentence could be. Generate embeddings using OpenAI small embeddings model and save to file for further use.
 
 Prompts:
 

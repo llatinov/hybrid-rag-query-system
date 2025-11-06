@@ -29,6 +29,7 @@ Notes:
 
 - NL2SQL seems to be very tough field with ongoing research, nevertheless OpenAI works fairly well with Northwind.
 - Even without the schema provided OpenAI returns good suggestions for simple queries? Is BIRD-bench included in OpenAI knowledge?
+- Chunk by length produces 907 chunks, chunk by sentences produces 4.5 times - 4091, very inefficient. Will revert after play with it?
 
 ### Data preparation
 
@@ -53,9 +54,10 @@ More details available in `implementation-steps.md`, here is only high-level ove
 3. Extract valuable info from articles - Extract ideas and terms from the articles that can eb researched later.
 4. Prepare SQL data and metadata - Find a test database and generate its metadata.
 5. Ask question on the SQL data - Using the metadata generate SQL queries based on user's question. Run the queries and pass the results so OpenAI can answer the question.
+6. Prepare text data and its embeddings - Find a test set of articles, chunk them, generate embeddings with OpenAI and save to file
 
 ## TODO
 
 - (Optimization) Tables metadata is extracted out of the full schema metadata in order to reduce the context window
 - (Optimization) Split the tables data into smaller files and make tables metadata to refer to those files, this is for further optimization of the context
-- (Security) Mechanism to check if user has access to the data
+- (Security) Mechanism to check if user has access to the SQL data

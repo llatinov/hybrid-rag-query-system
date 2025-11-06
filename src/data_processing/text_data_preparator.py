@@ -27,6 +27,7 @@ class TextDataPreparator:
         self.zip_path = config.folder_data / "MAVEN-dataset.zip"
         self.extract_dir = config.folder_data
         self.jsonl_path = self.extract_dir / 'test.jsonl'
+        self.file_articles_raw = config.folder_ready / 'articles_raw.json'
         self.processed_documents = []
 
     def process_jsonl(self):
@@ -49,13 +50,17 @@ class TextDataPreparator:
                         sentences.append(item['sentence'])
 
                     concatenated_text = ' '.join(sentences)
-                    self.processed_documents.append({"id": doc['id'], "title": doc['title'], "text": concatenated_text})
+                    self.processed_documents.append({"id": doc['id'], "title": doc['title'], "text": concatenated_text, "length": len(concatenated_text)})
 
                 except json.JSONDecodeError as e:
                     print(f"Error parsing JSON on line {line_num}: {e}")
                     continue
 
             print(f"Total documents processed: {len(self.processed_documents)}")
+
+        # Save articles for easy review
+        with open(self.file_articles_raw, 'w', encoding='utf-8') as f:
+            json.dump(self.processed_documents, f, ensure_ascii=False, indent=2)
 
         # Clean up extracted JSONL file
         self.jsonl_path.unlink()
@@ -90,16 +95,16 @@ class TextDataPreparator:
                 sentence = sentences[j]
                 sentence_length = len(sentence) + 1  # +1 for space
 
-                # If adding this sentence would exceed chunk_size and we already have sentences
-                if chunk_length + sentence_length > chunk_size and chunk_sentences:
+                # If chunk_size is exceeded already, it is not a problem if adding this one might exceed chunk_length
+                if chunk_length > chunk_size:
                     break
 
                 chunk_sentences.append(sentence)
                 chunk_length += sentence_length
                 j += 1
 
-            # Create the chunk from collected sentences
-            if chunk_sentences:
+            # Create the chunk from collected sentences if it does not contain overlap sentences from previous chunk
+            if not (chunks and len(chunk_sentences) <= overlap_sentences):
                 chunks.append(' '.join(chunk_sentences))
 
             # Move to next chunk position with overlap
