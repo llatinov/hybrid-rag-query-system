@@ -2,7 +2,7 @@
 
 ## Information
 
-A system that answers user questions by querying both a structured database (SQL) and an unstructured text corpus (via vector search). The solution uses OpenAI SDK library directly.
+A system that answers user questions by querying both a structured database (SQL) and an unstructured text corpus (via vector search). The solution uses OpenAI SDK library directly. The solution does not use vector database. Embeddings and vector search is handled in the code.
 
 ## Requirements
 
@@ -18,6 +18,7 @@ A system that answers user questions by querying both a structured database (SQL
 ## Data
 
 - [Northwind-SQLite3](https://github.com/jpwhite3/northwind-SQLite3) - an excellent tutorial schema for a small-business ERP, with customers, orders, inventory, purchasing, suppliers, shipping, employees, and single-entry accounting.
+- [MAVEN-dataset](https://github.com/THU-KEG/MAVEN-dataset) - Source code and dataset for EMNLP 2020 paper "MAVEN: A Massive General Domain Event Detection Dataset".
 
 ## Implementation details
 
@@ -31,9 +32,17 @@ Notes:
 
 ### Data preparation
 
-- Northwind database is processed on application initialization
+- Northwind database is processed on application initialization if needed
 - SQL schema is created and OpenAI API is called to describe the SQL schema
 - The resulting metadata and save this to a JSON file conforming to predefined with JSON schema
+
+- MAVEN is processed on application initialization if needed
+- Articles are glued together fro the original individual sentences
+- There are tow experiments here to see which chunking is better:
+  - Each article is split into sentences, which are combined into a chunk not longer than 512 characters and with one sentence overlap
+  - Each article is split by word count on 512 characters with 50 characters overlap
+- Embedding are generated for each text chunk with OpenAI embeddings API
+- The results are saved into a CSV file to be used later with Pandas and NumPy to do the searching
 
 ## Implementation steps
 

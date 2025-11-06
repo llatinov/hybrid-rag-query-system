@@ -26,7 +26,7 @@ class ApiStatistics:
 
     def print(self):
         """Print statistics in a formatted way."""
-        print(f"⏱️  API call took {self.total_time:.2f} seconds")
+        print(f"⏱️  API calls took {self.total_time:.2f} seconds")
         print(f"💰 Cost: ${self.total_cost:.6f} "
               f"(Input: {self.input_tokens} tokens for ${self.input_cost:.6f}, "
               f"Output: {self.output_tokens} tokens ${self.output_cost:.6f})")
@@ -61,6 +61,7 @@ class GPTModel:
     MODEL_PRICING = {
         "gpt-5": (5.00, 15.00),
         "gpt-5-mini": (1.25, 10.00),
+        "text-embedding-3-small": (0.02, 0.02),
     }
 
     def __init__(self, model_name: str):
@@ -89,7 +90,7 @@ class GPTModel:
             ApiStatistics object with tokens, costs, and timing information
         """
         input_tokens = usage.prompt_tokens
-        output_tokens = usage.completion_tokens
+        output_tokens = getattr(usage, 'completion_tokens', 0)
 
         # Calculate costs (pricing is per 1M tokens)
         input_cost = (input_tokens / 1_000_000) * self.pricing[0]

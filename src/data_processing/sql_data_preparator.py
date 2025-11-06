@@ -2,10 +2,10 @@ import json
 import os
 import sqlite3
 import time
-import zipfile
 from openai import OpenAI
 
 from src.config.config import Config
+from src.data_processing.data_processing_utils import DataProcessingUtils
 
 
 class SqlDataPreparator:
@@ -27,21 +27,8 @@ class SqlDataPreparator:
         self.db_zip_path = self.config.folder_data / "northwind.zip"
         self.db_metadata_format_path = self.config.folder_data / "metadata_format.json"
 
-        self.db_file_path = self.config.folder_db / "northwind.db"
-        self.db_schema_path = self.config.folder_db / "northwind_schema.sql"
-
-    def unzip_database(self):
-        """Unzip the database ZIP file in the current directory."""
-        print(f"Unzipping {self.db_zip_path}...")
-        print(f"Extracting to: {self.db_schema_path}")
-
-        try:
-            with zipfile.ZipFile(self.db_zip_path, 'r') as zip_ref:
-                zip_ref.extractall(self.config.folder_db)
-            print(f"Successfully extracted database")
-        except Exception as e:
-            print(f"Error during extraction: {str(e)}")
-            raise
+        self.db_file_path = self.config.folder_ready / "northwind.db"
+        self.db_schema_path = self.config.folder_ready / "northwind_schema.sql"
 
     def extract_schema(self):
         """Extract the full schema and save to a file."""
@@ -156,29 +143,9 @@ Schema:
         Prepare SQL database data: unzip, extract schema, generate metadata.
         This is the main method that orchestrates all preparation steps.
         """
-        print("\n" + "="*80)
-        print("DATABASE PREPARATION")
-        print("="*80)
-        print()
 
-        # Step 1: Unzip database
-        if not self.db_file_path.exists():
-            self.unzip_database()
-        else:
-            print("✓ Database file already exists")
+        DataProcessingUtils.unzip_file(self.db_zip_path, self.config.folder_ready)
+        self.extract_schema()
+        self.generate_metadata()
 
-        # Step 2: Extract schema
-        if not os.path.exists(self.db_schema_path):
-            self.extract_schema()
-        else:
-            print("✓ Schema file already exists")
-
-        # Step 3: Generate metadata
-        if not os.path.exists(self.config.file_sql_metadata):
-            self.generate_metadata()
-        else:
-            print("✓ Metadata file already exists")
-
-        print("\n" + "="*80)
         print("DATABASE PREPARATION COMPLETE")
-        print("="*80)

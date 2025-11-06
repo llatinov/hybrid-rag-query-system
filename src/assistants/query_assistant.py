@@ -5,6 +5,7 @@ from openai import OpenAI
 from src.models.gpt_model import ApiStatistics
 from src.assistants.sql_query_assistant import SQLQueryAssistant
 from src.data_processing.sql_data_preparator import SqlDataPreparator
+from src.data_processing.text_data_preparator import TextDataPreparator
 from src.config.config import Config
 
 
@@ -42,10 +43,14 @@ class QueryAssistant:
             raise RuntimeError(f"Error initializing SQL assistant: {e}")
 
     def _prepare_data(self):
-        """Prepare database data if not already prepared."""
+        """Prepare database and article data if not already prepared."""
         if not os.path.exists(self.config.file_sql_metadata):
             data_prep = SqlDataPreparator(self.client, self.config)
             data_prep.prepare_sql_data()
+
+        if not os.path.exists(self.config.file_articles_sentences) or not os.path.exists(self.config.file_articles_length):
+            text_preparator = TextDataPreparator(self.client, self.config)
+            text_preparator.prepare_articles()
 
     def generate_answer(self, question: str, sql_results: list) -> tuple[str, ApiStatistics]:
         """
