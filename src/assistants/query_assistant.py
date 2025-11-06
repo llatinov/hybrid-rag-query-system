@@ -4,6 +4,7 @@ from openai import OpenAI
 
 from src.models.gpt_model import ApiStatistics
 from src.assistants.sql_query_assistant import SQLQueryAssistant
+from src.assistants.text_query_assistant import TextQueryAssistant
 from src.data_processing.sql_data_preparator import SqlDataPreparator
 from src.data_processing.text_data_preparator import TextDataPreparator
 from src.config.config import Config
@@ -42,6 +43,12 @@ class QueryAssistant:
         except Exception as e:
             raise RuntimeError(f"Error initializing SQL assistant: {e}")
 
+        # Initialize Text Query Assistant
+        try:
+            self.text_assistant = TextQueryAssistant(self.client, self.config, use_sentence_chunks=False)
+        except Exception as e:
+            raise RuntimeError(f"Error initializing text assistant: {e}")
+
     def _prepare_data(self):
         """Prepare database and article data if not already prepared."""
         if not os.path.exists(self.config.file_sql_metadata):
@@ -52,7 +59,90 @@ class QueryAssistant:
             text_preparator = TextDataPreparator(self.client, self.config)
             text_preparator.prepare_articles()
 
-    def generate_answer(self, question: str, sql_results: list) -> tuple[str, ApiStatistics]:
+    def process_sql_query(self, question: str) -> tuple[str, str, ApiStatistics]:
+        """
+        Process question using SQL assistant.
+
+        Args:
+            question: User's question
+
+        Returns:
+            ApiStatistics for the SQL operations
+        """
+        stats = ApiStatistics.empty()
+        print("\n⏳ Analyzing your question with SQL...")
+        sql_analysis, sql_analysis_stats = self.sql_assistant.analyze_question(question)
+        stats = stats.sum(sql_analysis_stats)
+
+        if sql_analysis:
+            sql_debug = []
+            sql_debug_info, sql_gpt_input = self.sql_assistant.process_analysis(sql_analysis)
+
+            sql_debug.append("\n" + "="*80)
+            sql_debug.append("DETAILED SQL ANALYSIS")
+            sql_debug.append("="*80)
+            sql_debug.extend(sql_debug_info)
+            sql_debug.append("="*80)
+
+            return "\n".join(sql_gpt_input), "\n".join(sql_debug), stats
+        else:
+            print("\n❌ Failed to analyze the question with SQL.")
+            return "No SQL information available", ApiStatistics.empty()
+
+    def process_text_query(self, question: str, top_k: int = 5) -> tuple[str, str, ApiStatistics]:
+        """
+        Process question using text assistant.
+
+        Args:
+            question: User's question
+            top_k: Number of top results to return
+
+        Returns:
+            ApiStatistics for the text search operations
+        """
+        stats = ApiStatistics.empty()
+        print("\n⏳ Searching articles...")
+        semantic_results, keyword_results, query_debug, text_search_stats = self.text_assistant.search(question, top_k)
+        stats = stats.sum(text_search_stats)
+
+        semantic_article_ids = []
+        text_prompt = []
+        text_debug = []
+        text_debug.append("\n" + "="*80)
+        text_debug.append("QUERY INFO")
+        text_debug.append("="*80)
+        text_debug.extend(query_debug)
+
+        text_debug.append("\n" + "="*80)
+        text_debug.append("SEMANTIC SEARCH RESULTS (Top 5)")
+        text_debug.append("="*80)
+        for idx, result in enumerate(semantic_results, 1):
+            semantic_article_ids.append(result['id'])
+            text_prompt.append(f"Title: {result['title']}, Text: {result['text']}")
+            text_debug.append(f"\n{idx}. Article: {result['id']}")
+            text_debug.append(f"   Title: {result['title']}")
+            text_debug.append(f"   Similarity: {result['similarity']:.4f}")
+            text_debug.append(f"   Text: {result['text'][:100]}...")
+
+        text_debug.append("\n" + "="*80)
+        text_debug.append("KEYWORD SEARCH RESULTS (Top 5)")
+        text_debug.append("="*80)
+
+        use_keyword_article = True
+        for idx, result in enumerate(keyword_results, 1):
+            # Append only one article from the keyword search that is not already in semantic results
+            if use_keyword_article and result['id'] not in semantic_article_ids:
+                use_keyword_article = False
+                text_prompt.append(f"Title: {result['title']}, Text: {result['text']}")
+
+            text_debug.append(f"\n{idx}. Article: {result['id']}")
+            text_debug.append(f"   Title: {result['title']}")
+            text_debug.append(f"   Matches: {result['match_count']} ({', '.join(result['matched_keywords'])})")
+            text_debug.append(f"   Text: {result['text'][:100]}...")
+
+        return "\n".join(text_prompt), "\n".join(text_debug), stats
+
+    def generate_answer(self, question: str, sql_prompt: str, text_prompt: str) -> tuple[str, ApiStatistics]:
         """
         Generate a natural language answer based on SQL query results.
 
@@ -63,19 +153,25 @@ class QueryAssistant:
         Returns:
             Tuple of (answer: str, statistics: ApiStatistics)
         """
-        # Join SQL results into a single text block
-        sql_results_text = "\n".join(sql_results)
 
         prompt = f"""You are a helpful assistant that answers questions based on database query results.
 
 User Question: {question}
 
 SQL Query Results:
-{sql_results_text}
+{sql_prompt}
 
-Based on the SQL query results above, provide a clear, concise, and accurate answer to the user's question.
+Text Search Results:
+{text_prompt}
+
+Based on the SQL query results above and the text search results, provide a clear, concise, and accurate answer to the user's question.
 Format your response in a natural, conversational way. If the results show data in tables, summarize the key findings.
-If there are no results or the query failed, explain that appropriately."""
+If there are no results or the query failed, explain that appropriately.
+
+Do not suggest to do any follow up actions.
+Do not mention the SQL queries or database structure in your answer.
+Do not provide any external knowledge outside of the input data.
+Do not reference to other data sources."""
 
         try:
             # Start timing
@@ -107,7 +203,7 @@ If there are no results or the query failed, explain that appropriately."""
             return answer, statistics
 
         except Exception as e:
-            return f"Error generating answer: {str(e)}", None
+            return f"Error generating answer: {str(e)}", ApiStatistics.empty()
 
     def run(self):
         """Main CLI loop for the query assistant."""
@@ -131,39 +227,43 @@ If there are no results or the query failed, explain that appropriately."""
                     print("\nGoodbye! 👋")
                     break
 
-                # Analyze the question
-                print("\n⏳ Analyzing your question...")
-                sql_analysis, sql_analysis_stats = self.sql_assistant.analyze_question(question)
+                # Track statistics
+                stats = ApiStatistics.empty()
 
-                if sql_analysis:
-                    sql_debug_info, sql_gpt_input = self.sql_assistant.process_analysis(sql_analysis)
+                # Process SQL query
+                sql_prompt, sql_debug, sql_stats = self.process_sql_query(question)
+                stats = stats.sum(sql_stats)
 
-                    # Generate natural language answer
-                    print("\n⏳ Generating answer...")
-                    answer, answer_stats = self.generate_answer(question, sql_gpt_input)
+                # Process text query
+                text_prompt, text_debug, text_stats = self.process_text_query(question, top_k=5)
+                stats = stats.sum(text_stats)
 
-                    # Display the answer
-                    print("\n" + "="*80)
-                    print("ANSWER")
-                    print("="*80)
-                    print(f"\n{answer}\n")
-                    print("="*80)
-                    if answer_stats:
-                        answer_stats.sum(sql_analysis_stats).print()
+                # Generate natural language answer
+                print("\n⏳ Generating answer...")
+                answer, answer_stats = self.generate_answer(question, sql_prompt, text_prompt)
+                stats = stats.sum(answer_stats)
 
-                    if self.config.sql_debug:
-                        print("\n" + "="*80)
-                        print("DETAILED SQL ANALYSIS")
-                        print("="*80)
-                        print("\n".join(sql_debug_info))
-                        print("="*80)
-                        if sql_analysis_stats:
-                            sql_analysis_stats.print()
-
-                else:
-                    print("\n❌ Failed to analyze the question. Please try again.")
-
+                # Display the answer
+                print("\n" + "="*80)
+                print("ANSWER")
+                print("="*80)
+                print(f"\n{answer}\n")
+                print("="*80)
+                stats.print()
+                print("="*80)
                 print("\n")
+
+                # Display SQL debug info if enabled
+                if self.config.sql_search_debug:
+                    print("\n")
+                    print(sql_debug)
+                    print("\n")
+
+                # Display text debug info if enabled
+                if self.config.text_search_debug:
+                    print("\n")
+                    print(text_debug)
+                    print("\n")
 
             except KeyboardInterrupt:
                 print("\n\nGoodbye! 👋")

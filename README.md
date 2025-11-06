@@ -12,24 +12,20 @@ A system that answers user questions by querying both a structured database (SQL
 ## Usage
 
 1. Set OpenAI API key: `export OPENAI_API_KEY='your_api_key_here'`
-2. Disable SQL debug if output is too much: `export SQL_DEBUG=false`
-3. Run the query assistant: `python data/query_assistant.py`
+2. Enable SQL search debug for more details: `export SQL_SEARCH_DEBUG=true`
+3. Enable text search debug for more details: `export TEXT_SEARCH_DEBUG=true`
+4. Run the application: `python app.py`
 
 ## Data
 
 - [Northwind-SQLite3](https://github.com/jpwhite3/northwind-SQLite3) - an excellent tutorial schema for a small-business ERP, with customers, orders, inventory, purchasing, suppliers, shipping, employees, and single-entry accounting.
 - [MAVEN-dataset](https://github.com/THU-KEG/MAVEN-dataset) - Source code and dataset for EMNLP 2020 paper "MAVEN: A Massive General Domain Event Detection Dataset".
 
-## Implementation details
-
-Explain your design choices, the logic for query understanding and decomposition, data retrieval, result combination, and answer synthesis.
-Explain the challenges you encountered while building this system from scratch, particularly in the absence of high-level frameworks.
-
-Notes:
+## Implementation notes
 
 - NL2SQL seems to be very tough field with ongoing research, nevertheless OpenAI works fairly well with Northwind.
 - Even without the schema provided OpenAI returns good suggestions for simple queries? Is BIRD-bench included in OpenAI knowledge?
-- Chunk by length produces 907 chunks, chunk by sentences produces 4.5 times - 4091, very inefficient. Will revert after play with it?
+- Chunk by length produces 907 chunks, chunk by sentences produces more than three times - 3061, very inefficient. Will revert after play with it?
 
 ### Data preparation
 
@@ -55,6 +51,7 @@ More details available in `implementation-steps.md`, here is only high-level ove
 4. Prepare SQL data and metadata - Find a test database and generate its metadata.
 5. Ask question on the SQL data - Using the metadata generate SQL queries based on user's question. Run the queries and pass the results so OpenAI can answer the question.
 6. Prepare text data and its embeddings - Find a test set of articles, chunk them, generate embeddings with OpenAI and save to file
+7. Search text data - Process user input through OpenAI API, generating several versions of it, which are used in semantic search and keywords, which are used in full text search.
 
 ## TODO
 

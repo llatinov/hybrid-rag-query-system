@@ -4,18 +4,18 @@ from openai.types import CompletionUsage
 class ApiStatistics:
     """Statistics object for API call metrics."""
 
-    def __init__(self, input_tokens: int, input_cost: float, output_tokens: int,
-                 output_cost: float, total_cost: float, total_time: float):
+    def __init__(self, input_tokens: int = 0, input_cost: float = 0.0, output_tokens: int = 0,
+                 output_cost: float = 0.0, total_cost: float = 0.0, total_time: float = 0.0):
         """
         Initialize Statistics object.
 
         Args:
-            input_tokens: Number of input tokens
-            input_cost: Cost of input tokens
-            output_tokens: Number of output tokens
-            output_cost: Cost of output tokens
-            total_cost: Total cost of the API call
-            total_time: Time taken for the API call in seconds
+            input_tokens: Number of input tokens (default: 0)
+            input_cost: Cost of input tokens (default: 0.0)
+            output_tokens: Number of output tokens (default: 0)
+            output_cost: Cost of output tokens (default: 0.0)
+            total_cost: Total cost of the API call (default: 0.0)
+            total_time: Time taken for the API call in seconds (default: 0.0)
         """
         self.input_tokens = input_tokens
         self.input_cost = input_cost
@@ -23,6 +23,16 @@ class ApiStatistics:
         self.output_cost = output_cost
         self.total_cost = total_cost
         self.total_time = total_time
+
+    @classmethod
+    def empty(cls) -> 'ApiStatistics':
+        """
+        Create an empty ApiStatistics instance with all values set to zero.
+
+        Returns:
+            ApiStatistics instance with zero values
+        """
+        return cls()
 
     def print(self):
         """Print statistics in a formatted way."""

@@ -111,3 +111,7 @@ Results:
 
 - docs/06-result-chatgpt-design-rag-prompt.md
 - docs/06-result-claude-opus-design-rag-prompt.md
+
+### 7. Search text data
+
+Get user input and use OpenAI API to generate 3 different variations of the input + keywords. Use the 4 variations for semantic search into the articles with embeddings using cosine similarity between the embedding vectors. Use the keywords to search articles full text.

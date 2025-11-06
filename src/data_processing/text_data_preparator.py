@@ -27,7 +27,6 @@ class TextDataPreparator:
         self.zip_path = config.folder_data / "MAVEN-dataset.zip"
         self.extract_dir = config.folder_data
         self.jsonl_path = self.extract_dir / 'test.jsonl'
-        self.file_articles_raw = config.folder_ready / 'articles_raw.json'
         self.processed_documents = []
 
     def process_jsonl(self):
@@ -59,7 +58,7 @@ class TextDataPreparator:
             print(f"Total documents processed: {len(self.processed_documents)}")
 
         # Save articles for easy review
-        with open(self.file_articles_raw, 'w', encoding='utf-8') as f:
+        with open(self.config.file_articles_raw, 'w', encoding='utf-8') as f:
             json.dump(self.processed_documents, f, ensure_ascii=False, indent=2)
 
         # Clean up extracted JSONL file
@@ -151,8 +150,8 @@ class TextDataPreparator:
 
         chunked_documents = []
         chunk_id = 0
-        statistics: ApiStatistics = None
-        for _, article in enumerate(self.processed_documents):
+        statistics = ApiStatistics.empty()
+        for article in self.processed_documents:
             if chunk_by_sentence:
                 chunks = self.chunk_text_by_sentence(article['text'])
             else:

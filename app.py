@@ -14,6 +14,7 @@ def main():
         open_ai_api_key=os.getenv('OPENAI_API_KEY'),
         model_prepare_data="gpt-5",
         model_sql_assistant="gpt-5-mini",
+        model_text_assistant="gpt-5-mini",
         model_answer_generator="gpt-5-mini",
         model_embeddings="text-embedding-3-small",
         folder_data=folder_data,
@@ -22,7 +23,9 @@ def main():
         file_db=folder_ready / "northwind.db",
         file_articles_sentences=folder_ready / "articles_by_sentence_with_embeddings.json",
         file_articles_length=folder_ready / "articles_by_length_with_embeddings.json",
-        sql_debug=os.getenv('SQL_DEBUG', 'true').lower() in ('true', '1', 'yes'),
+        file_articles_raw=folder_ready / 'articles_raw.json',
+        sql_search_debug=os.getenv('SQL_SEARCH_DEBUG', 'false').lower() in ('true', '1', 'yes'),
+        text_search_debug=os.getenv('TEXT_SEARCH_DEBUG', 'false').lower() in ('true', '1', 'yes'),
     )
 
     try:

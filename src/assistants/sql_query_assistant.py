@@ -155,9 +155,9 @@ Please provide your response in the following JSON format:
 
         except Exception as e:
             print(f"Error calling OpenAI API: {e}")
-            return None, None
+            return None, ApiStatistics.empty()
 
-    def process_analysis(self, analysis: dict) -> tuple[list, list]:
+    def process_analysis(self, analysis: dict) -> tuple[list[str], list[str]]:
         """
         Display the analysis results in a formatted way.
 
